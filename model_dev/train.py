@@ -1,5 +1,5 @@
-from model_dev.utils.datasets import MaestroDataset
-from model_dev.settings import Settings
+from utils.datasets import MaestroDataset
+from settings import Settings
 
 settings = Settings()
 dataset = MaestroDataset(settings=settings)
