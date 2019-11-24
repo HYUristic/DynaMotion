@@ -112,7 +112,7 @@ class MaestroDataset(Dataset_Backbone):
             split_type = meta_data[midi_path]['split']  # train/validation/test
 
             quantized_piano_roll, quantized_velocity = midi_to_numpy(midi_path=os.path.join(self.dataset_path, midi_path), quantization_period=quantization_period)  # quantized midi in list(numpy_array)
-            n_sample = quantized_piano_roll.shape[0]  # number of quantized samples generated
+            piano_roll, velocity = quantized_piano_roll.shape[0]  # number of quantized samples generated
             pass
 
 

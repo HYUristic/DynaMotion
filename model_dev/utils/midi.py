@@ -68,7 +68,6 @@ def midi_to_numpy(midi_path: str, quantization_period: float):
     }
     for message in track:
         update_piano_roll(message=message, piano_roll=piano_roll, velocity=velocity, state=state, skip_length_tick=skip_length_tick)
-    import pdb; pdb.set_trace();
     piano_roll = piano_roll[:state['tick']]
     velocity = velocity[:state['tick']]
     return piano_roll, velocity
