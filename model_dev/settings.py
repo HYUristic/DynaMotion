@@ -12,4 +12,4 @@ class Settings:
             'link': '1BKfsI61Y9kZj1RETksJDUhr4UqAuh9VQ'
         }
     }
-    quantization_period = 1/4
+    quantization_period = 1/16
