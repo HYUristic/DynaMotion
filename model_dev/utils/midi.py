@@ -47,7 +47,6 @@ def update_piano_roll(message: mido.Message,
 
 
 def midi_to_numpy(midi_path: str, quantization_period: float):
-    print('start midi')
     midi_file = MidiFile(midi_path)
 
     # Configure midi settings
