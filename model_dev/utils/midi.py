@@ -9,10 +9,17 @@ def update_piano_roll(message: mido.Message,
                       piano_roll: np.ndarray,
                       velocity: np.ndarray,
                       state: dict,
-                      skip_length_tick: int):
+                      rate_tick: float):
 
     # Update Piano Roll / State 
-    tick_length = int(message.time / skip_length_tick)
+    tick_length = int(message.time * rate_tick)
+    remainder = message.time - tick_length/rate_tick
+    if remainder >= 0:
+        state['remainder'] += remainder
+    remainder_length = int(state['remainder'] * rate_tick)
+    tick_length += remainder_length
+    state['remainder'] -= remainder_length/rate_tick
+
     for delta_tick in range(tick_length):
         cur_tick = state['tick'] + delta_tick
         if state['sustain'] and state['tick'] != 0:  # pedal PRESSED
@@ -56,20 +63,19 @@ def midi_to_numpy(midi_path: str, quantization_period: float):
 
     # New Midi settings (quantized tempo and length)
     new_length_tick = int((length_tick / ticks_per_beat) / quantization_period)
-    skip_length_tick = int(length_tick / new_length_tick)  # skip length in ticks
+    rate_tick = new_length_tick / length_tick # skip length in ticks
 
     track = midi_file.tracks[1]
-    piano_roll = np.zeros((new_length_tick, 128)).astype(int)
+    piano_roll = np.zeros((new_length_tick, 128)).astype(bool)
     velocity = np.zeros((new_length_tick, 128)).astype(float)
     state = {
         'tick': 0,
+        'remainder': 0,
         'pressed': np.zeros(128).astype(int),
         'sustain': False
     }
     for message in track:
-        update_piano_roll(message=message, piano_roll=piano_roll, velocity=velocity, state=state, skip_length_tick=skip_length_tick)
-    piano_roll = piano_roll[:state['tick']]
-    velocity = velocity[:state['tick']]
+        update_piano_roll(message=message, piano_roll=piano_roll, velocity=velocity, state=state, rate_tick=rate_tick)
     return piano_roll, velocity
 
 

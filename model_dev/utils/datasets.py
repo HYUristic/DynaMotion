@@ -100,19 +100,32 @@ class MaestroDataset(Dataset_Backbone):
         # make train/valid dir to store augmented midi
         train_path = os.path.join(self.dataset_path, 'train')
         valid_path = os.path.join(self.dataset_path, 'valid')
+        test_path = os.path.join(self.dataset_path, 'test')
         if os.path.exists(train_path):
             shutil.rmtree(train_path)
         if os.path.exists(valid_path):
             shutil.rmtree(valid_path)
+        if os.path.exists(test_path):
+            shutil.rmtree(test_path)
         os.mkdir(os.path.join(self.dataset_path, 'train'))
         os.mkdir(os.path.join(self.dataset_path, 'valid'))
+        os.mkdir(os.path.join(self.dataset_path, 'test'))
 
         # augment midi
         for midi_path in meta_data.keys():
+            file_name = midi_path.split('/')[1]
             split_type = meta_data[midi_path]['split']  # train/validation/test
-
+            if split_type == 'train':
+                save_root = os.path.join(train_path, file_name)
+            elif split_type == 'valid':
+                save_root = os.path.join(valid_path, file_name)
+            elif split_type == 'test':
+                save_root = os.path.join(test_path, file_name)
+            
             quantized_piano_roll, quantized_velocity = midi_to_numpy(midi_path=os.path.join(self.dataset_path, midi_path), quantization_period=quantization_period)  # quantized midi in list(numpy_array)
-            piano_roll, velocity = quantized_piano_roll.shape[0]  # number of quantized samples generated
+            length_tick = quantized_piano_roll.shape[0]  # number of quantized samples generated
+
+            # TODO Save Numpy Array and save information
             pass
 
 
