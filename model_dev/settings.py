@@ -13,3 +13,4 @@ class Settings:
         }
     }
     quantization_period = 1/16
+    length = 64 # 4 bars in 1/16 period

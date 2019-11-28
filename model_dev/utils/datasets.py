@@ -1,8 +1,11 @@
+import os, sys
+sys.path.append(os.path.abspath('..'))
+
 from settings import Settings
 from utils.google_drive import download_file_from_google_drive
 from utils.midi import midi_to_numpy
+from utils.util import search
 
-import os
 import csv
 import json
 from tqdm import tqdm
@@ -64,26 +67,71 @@ class Dataset_Backbone(Dataset):
 
 
 class MaestroDataset(Dataset_Backbone):
-    def __init__(self, settings: Settings):
+    def __init__(self, split_mode, settings: Settings):
         dataset_id = 'Maestro'
+        self.split_mode = split_mode # train / validation / test
         super().__init__(settings=settings, dataset_id=dataset_id, force_preprocess=False)
-        pass
+        
+        self.meta_chunk = self.ticks2chunk(meta_ticks=self.get_meta_ticks())[split_mode]
 
-    def __getitem__(self, item):
-        pass
+    def __getitem__(self, global_index):
+        assert global_index>=0 and global_index<self.__len__(), "invalid index"
+        file_index, file_name, local_index = self.get_local_index(global_index)
+        piano_roll_file_name = os.path.join(self.get_root(), self.split_mode, "piano_roll", file_name)
+        velocity_file_name = os.path.join(self.get_root(), self.split_mode, "velocity", file_name)
+        
+        # Load file
+        piano_roll = np.load(piano_roll_file_name)
+        velocity = np.load(velocity_file_name)
+
+        # Slice np_array based in local_index
+        start_index = local_index * self.settings.length
+        end_index = start_index + self.settings.length # exclusive indexing
+
+        piano_roll = piano_roll[start_index: end_index]
+        velocity = velocity[start_index: end_index]
+
+        return piano_roll, velocity
 
     def __len__(self):
-        pass
+        return self.meta_chunk[-1]["length"]
         
     def get_root(self):
         root = os.path.join(self.dataset_path, "period_{}".format(self.settings.quantization_period))
         return root
 
+    def get_local_index(self, global_index):
+        file_index = search(self.meta_chunk, global_index)
+        file_name = self.meta_chunk[file_index]["name"]
+        if file_index !=0:
+            local_index = global_index - self.meta_chunk[file_index-1]["length"] 
+        else:
+            local_index = global_index
+        return file_index, file_name, local_index
+
+    def ticks2chunk(self, meta_ticks):
+        # meta data in ticks to chunks based on settings.length
+        meta_chunk = {}
+        for key in meta_ticks.keys():
+            meta_chunk[key] = []
+
+        for key in meta_ticks.keys():
+            chunk_sum = 0
+            for obj in meta_ticks[key]:
+                chunk_sum += int(obj["length"] / self.settings.length)
+                temp = {}
+                temp["name"] = obj["name"]
+                temp["length"] = chunk_sum
+                meta_chunk[key].append(temp)
+
+        return meta_chunk
+
     def get_meta_data_path(self):
         path = os.path.join(self.get_root(), 'meta.json')
         return path
 
-    def get_meta_data(self):
+    def get_meta_ticks(self):
+        # Read meta data in ticks for meta data path
         with open(self.get_meta_data_path()) as meta:
             data = json.load(meta)
         return data
@@ -102,7 +150,7 @@ class MaestroDataset(Dataset_Backbone):
             shutil.rmtree(root) 
         os.mkdir(root)
         train_path = os.path.join(root, 'train')
-        valid_path = os.path.join(root, 'valid')
+        valid_path = os.path.join(root, 'validation')
         test_path = os.path.join(root, 'test')
         paths = [train_path, valid_path, test_path]
         if os.path.exists(train_path):
@@ -138,10 +186,10 @@ class MaestroDataset(Dataset_Backbone):
                     meta_data[data['midi_filename']] = {'split': data['split']}
         
         # augment midi
-        processed_meta_data = {"train": {}, "validation": {}, "test": {}}
+        processed_meta_data = {"train": [], "validation": [],  "test": []}
         
         #TODO Update meta_data.keys() to full after development
-        for midi_path in tqdm(list(meta_data.keys())[:20]):
+        for midi_path in tqdm(meta_data.keys()):
             file_name = midi_path.split('/')[1]
             split_type = meta_data[midi_path]['split']  # train/validation/test
             if split_type == 'train':
@@ -154,7 +202,7 @@ class MaestroDataset(Dataset_Backbone):
             quantized_piano_roll, quantized_velocity = midi_to_numpy(midi_path=os.path.join(self.dataset_path, midi_path), quantization_period=quantization_period)  # quantized midi in list(numpy_array)
             
             # Update Meta Data
-            processed_meta_data[split_type][file_name] = int(quantized_piano_roll.shape[0])
+            processed_meta_data[split_type].append({'name': "{}.npy".format(file_name), 'length': int(quantized_piano_roll.shape[0])})
 
             # Save Numpy Array
             piano_save_path = os.path.join(save_root, "piano_roll", "{file_name}.npy".format(file_name=file_name))
@@ -170,5 +218,5 @@ class MaestroDataset(Dataset_Backbone):
 
 if __name__ == '__main__':
     settings = Settings()
-    dataset = MaestroDataset(settings=settings)
-
+    dataset = MaestroDataset(split_mode="train", settings=settings)
+    piano_roll, velocity = dataset[0]
