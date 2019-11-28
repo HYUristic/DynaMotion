@@ -77,7 +77,3 @@ def midi_to_numpy(midi_path: str, quantization_period: float):
         update_piano_roll(message=message, piano_roll=piano_roll, velocity=velocity, state=state, rate_tick=rate_tick)
     return piano_roll, velocity
 
-
-if __name__ == '__main__':
-    test_path = '/Users/litcoderr/Downloads/MIDI (1)/midi.mid'
-    numpy = midi_to_numpy(test_path, 1/8)
