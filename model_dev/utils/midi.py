@@ -61,7 +61,7 @@ def midi_to_numpy(midi_path: str, quantization_period: float):
     length_tick = int(length_sec / sec_per_ticks)
 
     # New Midi settings (quantized tempo and length)
-    new_length_tick = int((length_tick / ticks_per_beat) / quantization_period)
+    new_length_tick = int((length_tick / ticks_per_beat) * quantization_period)
     rate_tick = new_length_tick / length_tick # skip length in ticks
 
     track = midi_file.tracks[1]
