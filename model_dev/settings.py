@@ -14,3 +14,4 @@ class Settings:
     }
     quantization_period = 16
     length = 128 # 4 bars in 1/16 period
+    n_of_cnn_frames = 64
