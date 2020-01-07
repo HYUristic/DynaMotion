@@ -16,6 +16,7 @@ This project is to generate dynamic loudness of notes (velocity) from plain pian
 ### MIDI Dataloader
 Checkout ```model_dev/SimpleDatasetTutorial.ipynb``` for more details.
 1. Set ```settings.py```
+
 <b>Arguments</b><br>
 - dataset_root : Where your dataset is going to be downloaded and stored
 - dataset_info : DO NOT MODIFY. Essential for downloading dataset from cloud
@@ -34,6 +35,7 @@ print('total number : {}'.format(len(dataset)))
 ```
 
 3. Access dataset
+
 <b>Output</b><br>
 - piano_roll : Numpy_Array(shape=(length, 128), dtype=bool) Plain piano roll. 128 being total number of piano keys
 - velocity : Numpy_Array(shape=(length, 128), dtype=float32) Velocity range [0, 1]. 128 being total number of piano keys
