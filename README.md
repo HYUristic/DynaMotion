@@ -14,8 +14,8 @@ This project is to generate dynamic loudness of notes (velocity) from plain pian
 
 ## Usage
 ### MIDI Dataloader
-Checkout '''model_dev/SimpleDatasetTutorial.ipynb''' for more details.
-1. Set '''settings.py'''
+Checkout ```model_dev/SimpleDatasetTutorial.ipynb``` for more details.
+1. Set ```settings.py```
 <b>Arguments</b><br>
 - dataset_root : Where your dataset is going to be downloaded and stored
 - dataset_info : DO NOT MODIFY. Essential for downloading dataset from cloud
