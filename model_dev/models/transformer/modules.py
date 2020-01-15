@@ -8,7 +8,7 @@ import numpy as np
 class ScaledDotProductAttention(nn.Module):
     ''' Scaled Dot-Product Attention '''
     def __init__(self, temperature, attn_dropout=0.1):
-        super().__init__()
+        super(ScaledDotProductAttention, self).__init__()
         self.temperature = temperature
         self.dropout = nn.Dropout(attn_dropout)
 
@@ -28,7 +28,7 @@ class MultiHeadAttention(nn.Module):
     ''' Multi-Head Attention module '''
 
     def __init__(self, n_head, d_model, d_k, d_v, dropout=0.1):
-        super().__init__()
+        super(MultiHeadAttention, self).__init__()
 
         self.n_head = n_head
         self.d_k = d_k
@@ -79,7 +79,7 @@ class PositionwiseFeedForward(nn.Module):
     ''' A two-feed-forward-layer module '''
 
     def __init__(self, d_in, d_hid, dropout=0.1):
-        super().__init__()
+        super(PositionwiseFeedForward, self).__init__()
 
         self.w_1 = nn.Linear(d_in, d_hid) # position-wise
         self.w_2 = nn.Linear(d_hid, d_in) # position-wise
@@ -97,7 +97,7 @@ class PositionwiseFeedForward(nn.Module):
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_hid, n_position=200):
-        super().__init__()
+        super(PositionalEncoding, self).__init__()
 
         def get_position_angle_vec(position):
             return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
