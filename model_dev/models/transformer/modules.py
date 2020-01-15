@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -79,6 +80,7 @@ class PositionwiseFeedForward(nn.Module):
 
     def __init__(self, d_in, d_hid, dropout=0.1):
         super().__init__()
+
         self.w_1 = nn.Linear(d_in, d_hid) # position-wise
         self.w_2 = nn.Linear(d_hid, d_in) # position-wise
         self.layer_norm = nn.LayerNorm(d_in, eps=1e-6)
@@ -92,3 +94,20 @@ class PositionwiseFeedForward(nn.Module):
         output = self.layer_norm(output + residual)
 
         return output
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_hid, n_position=200):
+        super().__init__()
+
+        def get_position_angle_vec(position):
+            return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
+        
+        pe = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
+        pe[:, 0::2] = np.sin(pe[:, 0::2])
+        pe[:, 1::2] = np.cos(pe[:, 1::2])
+        pe = torch.FloatTensor(pe).unsqueeze(0)
+
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        return x + self.pe[:, :x.size(1)]
